@@ -1,52 +1,33 @@
-import React, { useState } from 'react'
-import { Link } from "react-router-dom";
+import React, { useState,useContext  } from 'react'
+import { Link } from 'react-router-dom';
 import { ErrorMessage } from "@hookform/error-message";
 import { useForm } from "react-hook-form";
-import axios from 'axios';
-
+import userContext from '../context/notes/UserContext';
+import { useHistory } from "react-router";
 
 export default function Signup() {
-
+    const history = useHistory();
+    const { state,createUser } = useContext(userContext);
     const { register, formState: { errors }, handleSubmit } = useForm({ criteriaMode: "all" });
-    const [redirect, setredirect] = useState(false)
-    const [formData, setformData] = useState({
-        email: "",
-        password: "",
-        confirmpass: "",
-        username: ""
-
-    })
-
     const [matchPass, setmatchPass] = useState({ error: '' })
 
-    const onSubmit = (data) => {
-        console.log(data)
+    const onSubmit = async(data) => {
+        data.preventDefault();
         if (data.password !== data.confirmpass) {
             setmatchPass({ error: 'Password Not Match !' });
             return false;
         }
-
-        setformData({
-            ...data
-        });
-
+      
         const { confirmpass, ...rest } = data
+        await createUser(rest);
+        setInterval(() => {
+            if(state.error === 'OK'){
+               history.push("/login")
+            }
+        }, 3000);
 
         
-        const headers = {
-            'Authorization': 'Bearer my-token',
-            'Accept' : '*/*',
-            'Content-Type' : 'application/json' 
-        };
-        axios.post('http://localhost:3001/api/auth/createuser', rest, { headers })
-            .then((response) =>{
-                
-            });
-
-
-
     }
-
 
 
     return (
@@ -61,9 +42,10 @@ export default function Signup() {
                             <span className="login100-form-title p-b-34 p-t-27">
                                 Registration
                             </span>
+                            
                             <div className="row">
                                 <div className="col-lg-12 p-t-20">
-                                    <div className="wrap-input100 validate-input" datavalidate="Enter username">
+                                    <div className="wrap-input100" datavalidate="Enter username">
                                         <input className="input100" type="text" name="username" placeholder="Username" {...register("username", {
                                             required: "This input is required.",
                                             minLength: {
@@ -88,7 +70,7 @@ export default function Signup() {
                                     />
                                 </div>
                                 <div className="col-lg-12 p-t-20">
-                                    <div className="wrap-input100 validate-input" datavalidate="Enter email">
+                                    <div className="wrap-input100" datavalidate="Enter email">
                                         <input className="input100" type="text" name="email" placeholder="Email" {...register("email", {
                                             required: "This input is required.",
                                             pattern: {
@@ -112,7 +94,7 @@ export default function Signup() {
                                     />
                                 </div>
                                 <div className="col-lg-12 p-t-20">
-                                    <div className="wrap-input100 validate-input" datavalidate="Enter password">
+                                    <div className="wrap-input100" datavalidate="Enter password">
                                         <input className="input100" type="password" name="password" placeholder="Password"  {...register("password", {
                                             required: "This input is required.",
                                             pattern: {
@@ -135,7 +117,7 @@ export default function Signup() {
                                     />
                                 </div>
                                 <div className="col-lg-12 p-t-20">
-                                    <div className="wrap-input100 validate-input" datavalidate="Enter password again">
+                                    <div className="wrap-input100" datavalidate="Enter password again">
                                         <input className="input100" type="password" name="confirmpass" placeholder="Confirm password" {...register("confirmpass", {
                                             required: "This input is required."
                                         }
@@ -150,7 +132,9 @@ export default function Signup() {
                                 <input value="SignUp" type="submit" style={{ "background": "#fff" }} className="login100-form-btn" />
 
                             </div>
-                            <div className="text-center p-t-90">
+
+                            <span className={`${state.error === 'OK' ? 'text-warning' : 'text-danger'} mt-5 login100-form-title`} style={{fontSize : "11px"}}>{state.message}</span>
+                            <div className="text-center mt-3">
                                 <Link className="txt1" to="/login">
                                     You already have a member?Login
                                 </Link>

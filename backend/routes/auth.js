@@ -18,7 +18,7 @@ router.post('/createuser', [
   // If there are errors, return Bad request and the errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    return res.status(400).json({ error: errors.array() });
   }
   // Check whether the user with this email exists already
   try {
@@ -40,11 +40,11 @@ router.post('/createuser', [
       }
     }
     var authtoken = jwt.sign(data, process.env.JWT_SECRET);
-    res.json({authtoken})
+    res.json({error : "ok" , authtoken})
 
   } catch (error) {
     console.error(error.message);
-    res.status(500).send("Internal Server Error !");
+    res.status(500).send({error : "Internal Server Error !"});
   }
 })
 
@@ -57,7 +57,7 @@ router.post('/login', [
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    return res.status(400).json({ error: errors.array() });
   }
 
   const {email ,password} = req.body;
@@ -79,11 +79,10 @@ router.post('/login', [
       }
     }
     var authtoken = jwt.sign(data, process.env.JWT_SECRET);
-    res.json({authtoken})
+    res.json({error:"OK" , authtoken})
 
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send("Internal Server Error !");
+    res.status(500).send({ error : "Internal Server Error !"});
   }
 
 });
